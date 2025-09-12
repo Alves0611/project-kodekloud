@@ -3,7 +3,6 @@ name: Solar System Workflow
 on:
   push:
     branches:
-      - main
       - feature/*
 
 env: 
@@ -16,7 +15,7 @@ jobs:
     name: Unit Testing
     strategy:
       matrix:
-        node-version: [18, 19, 20]
+        node-version: [18, 20]
         operating-system: [ubuntu-latest, macos-latest]
         exclude: 
           - node-version: 18
@@ -35,9 +34,11 @@ jobs:
         run: npm install
       
       - name: Unit Testing
+        id: nodejs-unit-testing-step
         run: npm test
 
       - name: Archive Test Results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Mocha-Test-Results-${{ matrix.node-version }}-${{ matrix.operating-system }}
