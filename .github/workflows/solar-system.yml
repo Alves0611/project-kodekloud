@@ -85,6 +85,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GHCR_REPO: alves0611
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -108,6 +111,10 @@ jobs:
           context: .
           push: false
           tags: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+          build-args: |
+            MONGO_URI=${{ env.MONGO_URI }}
+            MONGO_USERNAME=${{ env.MONGO_USERNAME }}
+            MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}
       
       - name: Docker Image Test 
         run: | 
@@ -125,6 +132,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-            ghcr.io/${{ env.GHCR_REPO }}/solar-system:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+          build-args: |
+            MONGO_URI=${{ env.MONGO_URI }}
+            MONGO_USERNAME=${{ env.MONGO_USERNAME }}
+            MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}
