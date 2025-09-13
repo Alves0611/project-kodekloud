@@ -83,6 +83,9 @@ jobs:
     name: Containerization
     needs: [unit-testing, code-coverage]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     env:
       GHCR_REPO: alves0611
     steps:
@@ -125,4 +128,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+            ghcr.io/${{ env.GHCR_REPO }}/solar-system:${{ github.sha }}
