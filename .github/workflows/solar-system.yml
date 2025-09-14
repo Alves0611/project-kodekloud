@@ -13,6 +13,15 @@ env:
 jobs:
   unit-testing:
     name: Unit Testing
+    env:
+      MONGO_URI: 'mongodb://localhost:27017/superData'
+      MONGO_USERNAME: non-prod-user
+      MONGO_PASSWORD: non-prod-password
+    services:
+      mongo-db:
+        image: siddharth67/mongo-db:non-prod
+        ports:
+          - 27017:27017
     strategy:
       matrix:
         node-version: [18, 20]
