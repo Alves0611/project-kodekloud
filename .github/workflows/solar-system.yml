@@ -181,6 +181,13 @@ jobs:
           echo "--------------------------------" 
           kubectl get nodes
 
+      - name: Debug - Check variables before replacement
+        run: |
+          echo "NAMESPACE: ${{ vars.NAMESPACE }}"
+          echo "REPLICAS: ${{ vars.REPLICAS }}"
+          echo "K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}"
+          echo "INGRESS_IP: ${{ vars.INGRESS_IP }}"
+
       - name: Replace Token in Manifest files
         uses: cschleiden/replace-tokens@v1
         with:
@@ -191,6 +198,12 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }} 
           K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+          INGRESS_IP: ${{ vars.INGRESS_IP }}
+
+      - name: Debug - Check files after replacement
+        run: |
+          echo "=== Ingress file content ==="
+          cat kubernetes/development/ingress.yaml
 
       - name: Create MongoDB Secret
         run: |
