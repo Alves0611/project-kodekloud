@@ -3,7 +3,7 @@ name: Solar System Workflow
 on:
   push:
     branches:
-      - main/
+      - main
       - feature/*
 
 env: 
