@@ -190,5 +190,18 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }} 
-          IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-          INGRESS: ${{ secrets.INGRESS_IP }}
+          K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+
+      - name: Create MongoDB Secret
+        run: |
+          kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=MONGO_URI=$MONGO_URI \
+            --from-literal=MONGO_USERNAME=$MONGO_USERNAME \
+            --from-literal=MONGO_PASSWORD=$MONGO_PASSWORD \
+            --save-config \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Deploy to Dev 
+        run: |
+          kubectl apply -f kubernetes/development
