@@ -155,6 +155,11 @@ jobs:
   dev-deploy: 
     needs: [docker]
     runs-on: ubuntu-latest
+    env:
+      NAMESPACE: ${{ vars.NAMESPACE }}
+      REPLICAS: ${{ vars.REPLICAS }} 
+      K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+      INGRESS_IP: ${{ vars.INGRESS_IP }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -183,10 +188,10 @@ jobs:
 
       - name: Debug - Check variables before replacement
         run: |
-          echo "NAMESPACE: '${{ vars.NAMESPACE }}'"
-          echo "REPLICAS: '${{ vars.REPLICAS }}'"
-          echo "K8S_IMAGE: '${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}'"
-          echo "INGRESS_IP: '${{ vars.INGRESS_IP }}'"
+          echo "NAMESPACE: '$NAMESPACE'"
+          echo "REPLICAS: '$REPLICAS'"
+          echo "K8S_IMAGE: '$K8S_IMAGE'"
+          echo "INGRESS_IP: '$INGRESS_IP'"
           echo "INGRESS_IP length: ${#INGRESS_IP}"
 
       - name: Replace Token in Manifest files
@@ -195,11 +200,6 @@ jobs:
             tokenPrefix: '_{_'
             tokenSuffix: '_}_'
             files: '["kubernetes/development/*.yaml"]'
-        env:
-          NAMESPACE: ${{ vars.NAMESPACE }}
-          REPLICAS: ${{ vars.REPLICAS }} 
-          K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-          INGRESS_IP: ${{ vars.INGRESS_IP }}
 
       - name: Debug - Check files after replacement
         run: |
