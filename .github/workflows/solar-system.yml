@@ -183,10 +183,11 @@ jobs:
 
       - name: Debug - Check variables before replacement
         run: |
-          echo "NAMESPACE: ${{ vars.NAMESPACE }}"
-          echo "REPLICAS: ${{ vars.REPLICAS }}"
-          echo "K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}"
-          echo "INGRESS_IP: ${{ vars.INGRESS_IP }}"
+          echo "NAMESPACE: '${{ vars.NAMESPACE }}'"
+          echo "REPLICAS: '${{ vars.REPLICAS }}'"
+          echo "K8S_IMAGE: '${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}'"
+          echo "INGRESS_IP: '${{ vars.INGRESS_IP }}'"
+          echo "INGRESS_IP length: ${#INGRESS_IP}"
 
       - name: Replace Token in Manifest files
         uses: cschleiden/replace-tokens@v1
@@ -204,6 +205,8 @@ jobs:
         run: |
           echo "=== Ingress file content ==="
           cat kubernetes/development/ingress.yaml
+          echo "=== Checking for unreplaced tokens ==="
+          grep -n "_{_" kubernetes/development/ingress.yaml || echo "No unreplaced tokens found"
 
       - name: Create MongoDB Secret
         run: |
