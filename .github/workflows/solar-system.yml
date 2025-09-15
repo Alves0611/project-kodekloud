@@ -190,8 +190,8 @@ jobs:
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }} 
-          IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-          INGRESS: ${{ secrets.INGRESS_IP }}
+          K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+          INGRESS_IP: ${{ secrets.INGRESS_IP }}
 
       - name: Create MongoDB Secret
         run: |

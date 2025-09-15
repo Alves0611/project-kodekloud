@@ -8,7 +8,7 @@ metadata:
   namespace: _{_NAMESPACE_}_
 spec:
   rules:
-     - host: solar-system-_{_NAMESPACE_}_.__{_INGRESS_IP_}_.nip.io
+    - host: solar-system-_{_NAMESPACE_}_.__{_INGRESS_IP_}_.nip.io
       http:
         paths:
           - backend:
