@@ -191,7 +191,6 @@ jobs:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }} 
           K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-          INGRESS_IP: ${{ vars.INGRESS_IP }}
 
       - name: Create MongoDB Secret
         run: |
