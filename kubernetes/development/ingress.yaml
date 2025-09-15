@@ -20,5 +20,5 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
-        - solar-system-_{NAMESPACE}_._{INGRESS_IP}_.nip.io
+        - solar-system-_{_NAMESPACE_}_.__{_INGRESS_IP_}_.nip.io
       secretName: ingress-local-tls
