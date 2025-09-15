@@ -159,7 +159,6 @@ jobs:
       NAMESPACE: ${{ vars.NAMESPACE }}
       REPLICAS: ${{ vars.REPLICAS }} 
       K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
-      INGRESS_IP: ${{ vars.INGRESS_IP }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -180,6 +179,15 @@ jobs:
         run: |
           aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }}
 
+      - name: Get LoadBalancer IP
+        id: get-lb-ip
+        run: |
+          LB_HOSTNAME=$(kubectl get service ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "LoadBalancer hostname: $LB_HOSTNAME"
+          LB_IP=$(nslookup $LB_HOSTNAME | grep -A1 "Name:" | tail -1 | awk '{print $2}')
+          echo "LoadBalancer IP: $LB_IP"
+          echo "lb-ip=$LB_IP" >> $GITHUB_OUTPUT
+
       - name: Fetch Kubernetes Cluster Details
         run: |
           kubectl version --client
@@ -191,8 +199,7 @@ jobs:
           echo "NAMESPACE: '$NAMESPACE'"
           echo "REPLICAS: '$REPLICAS'"
           echo "K8S_IMAGE: '$K8S_IMAGE'"
-          echo "INGRESS_IP: '$INGRESS_IP'"
-          echo "INGRESS_IP length: ${#INGRESS_IP}"
+          echo "LoadBalancer IP from step: ${{ steps.get-lb-ip.outputs.lb-ip }}"
 
       - name: Replace Token in Manifest files
         uses: cschleiden/replace-tokens@v1
@@ -200,6 +207,8 @@ jobs:
             tokenPrefix: '_{_'
             tokenSuffix: '_}_'
             files: '["kubernetes/development/*.yaml"]'
+        env:
+          INGRESS_IP: ${{ steps.get-lb-ip.outputs.lb-ip }}
 
       - name: Debug - Check files after replacement
         run: |
