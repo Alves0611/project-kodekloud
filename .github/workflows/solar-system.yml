@@ -54,7 +54,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Mocha-Test-Results-${{ matrix.node-version }}-${{ matrix.operating-system }}
+          name: Mocha-Test-Result-node${{ matrix.node-version }}
           path: test-results.xml
 
   code-coverage:
@@ -183,3 +183,38 @@ jobs:
       MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
       MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
+  reports-s3: 
+    needs: [code-coverage, unit-testing]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Download Mocha Test Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Mocha-Test-Result-node*
+          merge-multiple: true
+
+      - name: Download Code Coverage Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Code-Coverage-Result
+
+      - name: Merge Test Files 
+        run: | 
+          ls -ltr
+          mkdir reports-${{ github.sha }}
+          mv cobertura-coverage.xml reports-${{ github.sha }}/
+          mv test-results.xml reports-${{ github.sha }}/
+          ls -ltr reports-${{ github.sha }}/
+
+      - name: Upload Reports to S3
+        uses: jakejarvis/s3-sync-action@master
+        with: 
+          args: --follow-symlinks --delete 
+        env: 
+          AWS_S3_BUCKET: reports-bucket-studying
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          SOURCE_DIR: reports-${{ github.sha }}
+          DEST_DIR: reports-${{ github.sha }}
