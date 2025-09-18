@@ -1,0 +1,88 @@
+name: Deployment - Reusable Workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        description: 'AWS Access Key ID for EKS cluster access'
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        description: 'AWS Secret Access Key for EKS cluster access'
+        required: true
+      EKS_CLUSTER_NAME:
+        description: 'Name of the EKS cluster to deploy to'
+        required: true
+      DOCKER_USERNAME:
+        description: 'Docker Hub username for image registry access'
+        required: true
+      MONGO_URI:
+        description: 'MongoDB connection URI'
+        required: true
+      MONGO_USERNAME:
+        description: 'MongoDB username for database authentication'
+        required: true
+      MONGO_PASSWORD:
+        description: 'MongoDB password for database authentication'
+        required: true
+
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install kubectl CLI
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.27.4
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      - name: Fetch Kubernetes Cluster Details
+        run: |
+          kubectl version --client
+          echo "--------------------------------" 
+          kubectl get nodes
+
+      - name: Replace Token in Manifest files
+        uses: cschleiden/replace-tokens@v1
+        with:
+          tokenPrefix: '_{_'
+          tokenSuffix: '_}_'
+          files: '["kubernetes/${{ inputs.environment }}/*.yaml"]'
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          REPLICAS: ${{ vars.REPLICAS }} 
+          K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+
+      - name: Create MongoDB Secret
+        run: |
+          kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=MONGO_URI=$MONGO_URI \
+            --from-literal=MONGO_USERNAME=$MONGO_USERNAME \
+            --from-literal=MONGO_PASSWORD=$MONGO_PASSWORD \
+            --save-config \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Deploy to ${{ inputs.environment }}
+        run: |
+          kubectl apply -f kubernetes/${{ inputs.environment }}
