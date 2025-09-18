@@ -157,6 +157,8 @@ jobs:
     if: contains(github.ref, 'feature/')
     needs: [docker]
     uses: ./.github/workflows/reusable-deployment.yml
+    with:
+      environment: development
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -170,6 +172,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: [docker]
     uses: ./.github/workflows/reusable-deployment.yml
+    with:
+      environment: production
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
