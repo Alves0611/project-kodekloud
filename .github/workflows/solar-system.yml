@@ -212,7 +212,7 @@ jobs:
         with: 
           args: --follow-symlinks --delete 
         env: 
-          AWS_BUCKET: reports-bucket-studying
+          AWS_S3_BUCKET: reports-bucket-studying
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
