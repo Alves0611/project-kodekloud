@@ -2,6 +2,11 @@ name: Deployment - Reusable Workflow
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment for deployment'
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -23,7 +28,7 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     environment:
-      name: development
+      name: ${{ inputs.environment }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -55,7 +60,7 @@ jobs:
         with:
           tokenPrefix: '_{_'
           tokenSuffix: '_}_'
-          files: '["kubernetes/development/*.yaml"]'
+          files: '["kubernetes/${{ inputs.environment }}/*.yaml"]'
         env:
           NAMESPACE: ${{ vars.NAMESPACE }}
           REPLICAS: ${{ vars.REPLICAS }} 
@@ -71,6 +76,6 @@ jobs:
             --dry-run=client \
             -o yaml | kubectl apply -f -
 
-      - name: Deploy to Dev 
+      - name: Deploy to ${{ inputs.environment }}
         run: |
-          kubectl apply -f kubernetes/development
+          kubectl apply -f kubernetes/${{ inputs.environment }}
