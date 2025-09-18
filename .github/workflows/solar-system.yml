@@ -54,7 +54,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Mocha-Test-Result
+          name: Mocha-Test-Result-node${{ matrix.node-version }}
           path: test-results.xml
 
   code-coverage:
@@ -188,11 +188,11 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - name: Download Mocha Test Artifact
+      - name: Download Mocha Test Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: Mocha-Test-Result
-        
+          pattern: Mocha-Test-Result-node*
+          merge-multiple: true
 
       - name: Download Code Coverage Artifact
         uses: actions/download-artifact@v4
