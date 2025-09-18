@@ -2,6 +2,22 @@ name: Deployment - Reusable Workflow
 
 on:
   workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      EKS_CLUSTER_NAME:
+        required: true
+      DOCKER_USERNAME:
+        required: true
+      MONGO_URI:
+        required: true
+      MONGO_USERNAME:
+        required: true
+      MONGO_PASSWORD:
+        required: true
+
 
 jobs:
   deployment:
