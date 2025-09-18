@@ -1,0 +1,60 @@
+name: Deployment - Reusable Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install kubectl CLI
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.27.4
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      - name: Fetch Kubernetes Cluster Details
+        run: |
+          kubectl version --client
+          echo "--------------------------------" 
+          kubectl get nodes
+
+      - name: Replace Token in Manifest files
+        uses: cschleiden/replace-tokens@v1
+        with:
+          tokenPrefix: '_{_'
+          tokenSuffix: '_}_'
+          files: '["kubernetes/development/*.yaml"]'
+        env:
+          NAMESPACE: ${{ vars.NAMESPACE }}
+          REPLICAS: ${{ vars.REPLICAS }} 
+          K8S_IMAGE: ${{ secrets.DOCKER_USERNAME }}/solar-system:${{ github.sha }}
+
+      - name: Create MongoDB Secret
+        run: |
+          kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+            --from-literal=MONGO_URI=$MONGO_URI \
+            --from-literal=MONGO_USERNAME=$MONGO_USERNAME \
+            --from-literal=MONGO_PASSWORD=$MONGO_PASSWORD \
+            --save-config \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Deploy to Dev 
+        run: |
+          kubectl apply -f kubernetes/development
