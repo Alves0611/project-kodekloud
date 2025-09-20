@@ -37,14 +37,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Cache NPM Dependencies
-        uses: actions/cache@v4
+      - name: Composite Action - Cache & Install NPM Packages
+        uses: ./.github/custom-actions/npm-action
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
-      - name: Install dependencies
-        run: npm install
+          path-of-folder: node_modules
       
       - name: Unit Testing
         id: nodejs-unit-testing-step
@@ -76,14 +72,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Cache NPM Dependencies
-        uses: actions/cache@v4
+      - name: Composite Action - Cache & Install NPM Packages
+        uses: ./.github/custom-actions/npm-action
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
-      - name: Install dependencies
-        run: npm install
+          path-of-folder: node_modules
 
       - name: Run Code Coverage
         continue-on-error: true
