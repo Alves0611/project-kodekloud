@@ -12,6 +12,16 @@ env:
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 
 jobs:
+  codeql-security-analysis:
+    name: CodeQL Security Analysis
+    uses: ./.github/workflows/codeql-analysis.yml
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    with:
+      language: 'javascript'
+
   unit-testing:
     name: Unit Testing
     env:
@@ -214,7 +224,7 @@ jobs:
   slack-notification:
     if: always()
     name: Slack Notification
-    needs: [dev-deploy, prd-deploy]
+    needs: [dev-deploy, prd-deploy, codeql-security-analysis]
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
