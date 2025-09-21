@@ -1,24 +1,22 @@
-name: "CodeQL"
+name: "CodeQL Security Analysis"
 
 on:
-  push:
-    branches:
-      - main
-      - feature/*
+  workflow_call:
+    inputs:
+      language:
+        description: 'Language to analyze'
+        required: false
+        type: string
+        default: 'javascript'
 
 jobs:
-  analyze:
-    name: Analyze
+  codeql-analysis:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
       security-events: write
       contents: read
       actions: read
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript' ] 
 
     steps:
       - name: Checkout repository
@@ -27,7 +25,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
+          languages: ${{ inputs.language }}
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
